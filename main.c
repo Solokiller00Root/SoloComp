@@ -25,7 +25,6 @@ struct _ASPTree {
     struct _ASPTree *right;
 };
 
-// Function prototypes
 TOKEN_TYPE lex(unsigned char **_src, TOKEN *num);
 struct _ASPTree *parseFactor(unsigned char **_src);
 
@@ -41,6 +40,7 @@ struct _ASPTree *newNode(int value) {
 struct _ASPTree *parseTerm(unsigned char **_src) {
     TOKEN token;
     TOKEN_TYPE type = lex(_src, &token);
+    printf("PARSE TERM: %d\n", type);
     struct _ASPTree *exp;
 
     switch (type) {
@@ -51,7 +51,7 @@ struct _ASPTree *parseTerm(unsigned char **_src) {
             printf("Parsed LPAREN\n");
             exp = parseFactor(_src); 
             if (lex(_src, &token) != TOKEN_RPAREN) {
-                printf("Error: Expected RPAREN after expression inside parentheses\n");
+                printf("Missing closing parentheses");
                 free(exp);
                 return NULL;
             }
@@ -61,9 +61,9 @@ struct _ASPTree *parseTerm(unsigned char **_src) {
             return NULL;
     }
 }
-
 struct _ASPTree *parseFactor(unsigned char **_src) {
     struct _ASPTree *left = parseTerm(_src);
+    
     if (!left) {
         printf("Error: Failed to parse left term\n");
         return NULL;
@@ -71,15 +71,17 @@ struct _ASPTree *parseFactor(unsigned char **_src) {
 
     TOKEN token;
     TOKEN_TYPE type = lex(_src, &token);
+    printf("PARSE FACTOR: %d\n", type);
 
     switch (type) {
         case TOKEN_PLUS:
         case TOKEN_MINUS:
         case TOKEN_DIVIDE:
         case TOKEN_MULTIPLY:
+            printf("Parsed operator\n");
             {
-                printf("Parsed operator\n");
                 struct _ASPTree *right = parseFactor(_src);
+ 
                 if (!right) {
                     printf("Error: Failed to parse right factor\n");
                     free(left);
@@ -94,9 +96,12 @@ struct _ASPTree *parseFactor(unsigned char **_src) {
             }
         case TOKEN_END:
             printf("Parsed end of input\n");
-            return left; // if its end return the single term.
+            return left;
+        case TOKEN_RPAREN:
+            printf("Parsed RPAREN\n");
+            return left; 
         default:
-            printf("Error: Unexpected token in parseFactor\n");
+            printf("Error: Unexpected token in parseFactor\n"); 
             free(left);
             return NULL;
     }
@@ -105,6 +110,7 @@ struct _ASPTree *parseFactor(unsigned char **_src) {
 TOKEN_TYPE lex(unsigned char **_src, TOKEN *num) {
     unsigned char *src = *_src;
     int i;
+    
     while (1) {
         switch (*src) {
             case 0:
@@ -160,7 +166,7 @@ TOKEN_TYPE lex(unsigned char **_src, TOKEN *num) {
 
 int parse(struct _ASPTree *node){
     if(node == NULL){
-        printf("Error: Node = NULL");
+        printf("Error: Node = NULL\n");
         return 1;
     }
 
@@ -230,10 +236,8 @@ int main(int argc, char *argv[]) {
 
     unsigned char *input = argv[1];
     struct _ASPTree *root = parseFactor(&input);
-    if (root == NULL) {
-        printf("Error: Failed to parse expression\n");
-        return 1;
-    }
+    //testLex(input);
+  
 
     int result = parse(root);
     printf("Result: %d\n", result);
