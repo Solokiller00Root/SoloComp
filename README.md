@@ -1,8 +1,3 @@
 
 
-
-
-
-need to fix the bugs for the parenthesis 
-
-getting bugs from RPARE
+Couldnt figure out the clossing parentheses but i found out that it works with double )) :DD
